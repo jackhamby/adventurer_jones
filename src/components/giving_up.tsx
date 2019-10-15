@@ -4,52 +4,92 @@
 import React, { useState, useEffect, useRef} from 'react';
 import * as PIXI from 'pixi.js';
 import { Player } from './game_wrapper';
+import { keyboard } from '../helpers/keyboard';
 
-
-
+let app = new PIXI.Application({ 
+    width: 256, 
+    height: 256,                       
+    antialias: true, 
+    transparent: false, 
+    resolution: 1
+  }
+);
+document.body.appendChild(app.view);
 
 export const GivingUp = (props: any) => {
 
-    const [player, setPlayer] = useState({} as Player)
-
-    useEffect(() => { 
-        console.log('using effect')
-        let app = new PIXI.Application({ 
-            width: 256, 
-            height: 256,                       
-            antialias: true, 
-            transparent: false, 
-            resolution: 1
-          }
-        );
-        
-        //Add the canvas that Pixi automatically created for you to the HTML document
-        document.body.appendChild(app.view);
-        
-        //load an image and run the `setup` function when it's done
-        app.loader
-          .add("./knight.png")
-          .load(setup);
-        
-        //This `setup` function will run when the image has loaded
-        function setup() {
-        
-          //Create the cat sprite
-          let cat = new PIXI.Sprite(app.loader.resources["./knight.png"].texture);
-          
-          //Add the cat to the stage
-          app.stage.addChild(cat);
+    const [player, setPlayer] = useState(
+        {
+            name: "newplayer",
+            sprite: {} as PIXI.Sprite
+        } as Player
+    )
+    const [isReady, setIsReady] = useState(false);
+    const [keys, setKeys] = useState(
+        {
+            "up" : keyboard('w'),
+            "down" : keyboard('s'),
+            "left" : keyboard('a'),
+            "right" : keyboard('d')
         }
-    }, [player])
+    )
+    
+    useEffect(() => { 
+        if (isReady){
+            //do 
+        }
+        else{
+            app.loader
+                .add("./knight.png")
+                .load(init);
+        }
+    }, [player, isReady])
 
-    const updatePlayer = () => {
-        setPlayer({name: "ass"} as Player)
+    const handleKeyEvents = () => {
+        console.log(player)
+
+        keys.up.press = () => {
+            player.sprite.y -= 1;
+        };
+        keys.down.press = () => {
+            player.sprite.y += 1;
+        };
+        keys.left.press = () => {
+            player.sprite.x -= 1;
+        };
+        keys.right.press = () => {
+            player.sprite.x += 1;
+        };
+        
+    }
+
+
+    const gameLoop = (delta: any) => {
+        // player.sprite.x += 1;
+        // console.log(context)
+        // console.log(player)
+        // console.log('looping');
+        // player.sprite.x += 1;s
+        // setPlayer(player)
+    }
+
+    // const updatePlayer = () => {
+    //     setPlayer(player)
+    // }
+
+    const init = () => {
+        player.sprite = new PIXI.Sprite(app.loader.resources["./knight.png"].texture)
+        setIsReady(true);
+        setPlayer(player);
+        handleKeyEvents();
+        app.stage.addChild(player.sprite);
+        app.ticker.add(delta => gameLoop(delta))
     }
 
 
     return (
         <div> 
-            <button onClick={updatePlayer}> PRESS </button>
+            <button > PRESS </button>
             Gave Up
         </div>
     )
