@@ -1,0 +1,35 @@
+.top {
+    height: 8%;
+    /* background-color: blue; */
+
+}
+
+.middle {
+    height: 75%;
+    padding-top: 2%;
+    padding-bottom: 2%;
+    /* background-color: black; */
+}
+
+.bottom {
+    height: 13%;
+    /* background-color: red; */
+
+}
+
+.container {
+    height:100%;
+}
+
+.game-container {
+    /* background-color: brown; */
+    /* padding-right: 2%; */
+}
+
+.game-detail-container {
+    /* background-color: pink; */
+}
+
+.wrapper{
+    border: solid black 1px;
+}

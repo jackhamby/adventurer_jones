@@ -1,3 +1,7 @@
+import * as PIXI from 'pixi.js'
+import { Container, Player } from '../types/game_types'
+
+
 export interface Key {
     value: any;
     isDown: boolean;
@@ -59,3 +63,26 @@ export const keyboard = (value: string): Key => {
     
     return key;
   }
+
+
+export const hitWall = (player: Player, container: Container) => {
+    const sprite = player.sprite;
+    const walls = [];
+    // left collision
+    if (sprite.x + player.xVelocity < container.x){
+        walls.push("left");
+    }
+    // right collision
+    if ((sprite.x + sprite.width) + player.xVelocity > (container.x + container.width)){
+        walls.push("right");
+    }
+    // top collision
+    if (sprite.y + player.yVelocity< container.y){
+      walls.push("top");
+    }
+    // bootm collision
+    if ((sprite.y + sprite.height) + player.yVelocity > (container.y + container.height)){
+      walls.push("bottom");
+    }
+    return walls;
+}
