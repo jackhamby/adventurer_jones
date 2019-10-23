@@ -77,7 +77,7 @@ export const hitWall = (player: Player, container: Container) => {
         walls.push("right");
     }
     // top collision
-    if (sprite.y + player.yVelocity< container.y){
+    if (sprite.y + player.yVelocity < container.y){
       walls.push("top");
     }
     // bootm collision
@@ -85,4 +85,23 @@ export const hitWall = (player: Player, container: Container) => {
       walls.push("bottom");
     }
     return walls;
+}
+
+export const collided = (player: Player, object: Container | PIXI.Sprite) => {
+
+  if (player.sprite.y < (object.y + object.height) &&
+      (player.sprite.y + player.sprite.height) > object.y &&
+      player.sprite.x < (object.x + object.width) &&
+      (player.sprite.x + player.sprite.width) > object.x){
+        console.log('collision')
+        return true;
+      }
+  // check if PLAYER BOTTOM hit OBJECT top
+  // if (player.sprite.y + player.sprite.width > object.y){
+  //   // console.log('collided top')
+  // }
+  // // check if PLAYER TOP hit OBJECT bottom
+  // if (player.sprite.y < object.y + object.height){
+  //   console.log('collided bottom')
+  // }
 }
