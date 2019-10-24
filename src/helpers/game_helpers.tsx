@@ -1,6 +1,7 @@
 import * as PIXI from 'pixi.js'
 import { Container, Player } from '../types/game_types'
 
+export const margin = 5;
 
 export interface Key {
     value: any;
@@ -89,13 +90,29 @@ export const hitWall = (player: Player, container: Container) => {
 
 export const collided = (player: Player, object: Container | PIXI.Sprite) => {
 
-  if (player.sprite.y < (object.y + object.height) &&
+  if (player.sprite.y< (object.y + object.height) &&
       (player.sprite.y + player.sprite.height) > object.y &&
       player.sprite.x < (object.x + object.width) &&
-      (player.sprite.x + player.sprite.width) > object.x){
-        console.log('collision')
+      (player.sprite.x + player.sprite.width) > object.x){  
+
+        if ((player.sprite.y + player.sprite.height - margin) >= object.y){
+          player.sprite.x -= player.xVelocity;
+        }        
+        // if (player.sprite.){
+        if (player.sprite.x >= (object.x + object.width)){
+          player.sprite.y += player.yVelocity;
+          console.log('do somthing here')
+        }
+        if ((player.sprite.x + player.sprite.width) <= object.x){
+          player.sprite.y += player.yVelocity;
+        }
+        player.sprite.y -= player.yVelocity;
+        console.log('not moving y')
+
+        // }
         return true;
       }
+    return false;
   // check if PLAYER BOTTOM hit OBJECT top
   // if (player.sprite.y + player.sprite.width > object.y){
   //   // console.log('collided top')
@@ -104,4 +121,37 @@ export const collided = (player: Player, object: Container | PIXI.Sprite) => {
   // if (player.sprite.y < object.y + object.height){
   //   console.log('collided bottom')
   // }
+}
+
+
+export const contain = (sprite: PIXI.Sprite, container: Container) => {
+
+  let collision = undefined;
+
+  //Left
+  if (sprite.x < container.x) {
+    sprite.x = container.x;
+    collision = "left";
+  }
+
+  //Top
+  if (sprite.y < container.y) {
+    sprite.y = container.y;
+    collision = "top";
+  }
+
+  //Right
+  if (sprite.x + sprite.width > container.width) {
+    sprite.x = container.width - sprite.width;
+    collision = "right";
+  }
+
+  //Bottom
+  if (sprite.y + sprite.height > container.height) {
+    sprite.y = container.height - sprite.height;
+    collision = "bottom";
+  }
+
+  //Return the `collision` value
+  return collision;
 }

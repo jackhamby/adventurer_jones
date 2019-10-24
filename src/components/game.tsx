@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useRef} from 'react';
 import * as PIXI from 'pixi.js';
 import { Player, Container } from '../types/game_types';
-import { keyboard, hitWall, collided } from '../helpers/game_helpers';
+import { keyboard, hitWall, collided, contain } from '../helpers/game_helpers';
 import { appContainer, app } from './application';
 import * as stages from '../helpers/stages';
 
@@ -67,13 +67,6 @@ for (let i = 0; i < stageRows.length; ++i){
     }
     // if ()
 }
-// console.log('\n')
-// for (let i = 0; i < currentStage.length; ++i ){
-//     console.log(currentStage.charAt(i))
-// }
-// console.log('\n')
-
-// console.log(tiles)
 
 
 export const Game = (props: any) => {
@@ -83,7 +76,7 @@ export const Game = (props: any) => {
             name: "newplayer",
             sprite: {} as PIXI.Sprite,
             xVelocity: 0,
-            yVelocity: 0
+            yVelocity: 0,
         } as Player
     )
     const [isReady, setIsReady] = useState(false);
@@ -151,26 +144,12 @@ export const Game = (props: any) => {
     }
 
     const updatePlayer = () => {
-        let wallsHit = hitWall(player, appContainer)
-        let collide = collided(player, tiles[0])
-        // Sprite with in Y bounds, update sprite y based on velocity
-        if (wallsHit.indexOf('bottom') === -1 &&
-            wallsHit.indexOf('top') === -1  && 
-            !collide){
-                player.sprite.y += player.yVelocity;
-            }
-        else{
-            // Sprite hit bottom, set isFlying to false
-            if (wallsHit.indexOf('bottom') != -1){
-                player.isFlying = false;
-            }
-        }
-        // Sprite with in X bounds, update sprite x based on velocity
-        if (wallsHit.indexOf('right') === -1 && 
-            wallsHit.indexOf('left') === -1){
-                player.sprite.x += player.xVelocity;
-            }
-
+        player.sprite.y += player.yVelocity;
+        player.sprite.x += player.xVelocity;
+        contain(player.sprite, appContainer);
+        tiles.forEach((tile: Tile) => {
+            collided(player, tile)
+        });
         // Apply gravity, max gravity is 3 px/tick
         if (player.yVelocity < 3){
             player.yVelocity += 1;        

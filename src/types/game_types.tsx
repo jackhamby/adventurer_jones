@@ -19,3 +19,4 @@ export interface PlayerAttributes {
     jump: number;
     moveSpeed: number;
 }
+
