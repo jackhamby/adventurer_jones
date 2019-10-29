@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js'
-import { Container, Player } from '../types/game_types'
+import { Container, Player, Enemy } from '../types/game_types'
 
 export const margin = 5;
 
@@ -88,7 +88,7 @@ export const hitWall = (player: Player, container: Container) => {
     return walls;
 }
 
-export const collided = (player: Player, object: Container | PIXI.Sprite) => {
+export const collided = (player: Player | Enemy, object: Container | PIXI.Sprite) => {
 
   if (player.sprite.y< (object.y + object.height) &&
       (player.sprite.y + player.sprite.height) > object.y &&
@@ -107,6 +107,7 @@ export const collided = (player: Player, object: Container | PIXI.Sprite) => {
           player.sprite.y += player.yVelocity;
         }
         player.sprite.y -= player.yVelocity;
+        player.yVelocity = 0;
         console.log('not moving y')
 
         // }
@@ -124,10 +125,10 @@ export const collided = (player: Player, object: Container | PIXI.Sprite) => {
 }
 
 
-export const contain = (sprite: PIXI.Sprite, container: Container) => {
+export const contain = (player: Player | Enemy, container: Container) => {
 
   let collision = undefined;
-
+  const sprite = player.sprite;
   //Left
   if (sprite.x < container.x) {
     sprite.x = container.x;
@@ -150,6 +151,8 @@ export const contain = (sprite: PIXI.Sprite, container: Container) => {
   if (sprite.y + sprite.height > container.height) {
     sprite.y = container.height - sprite.height;
     collision = "bottom";
+    player.yVelocity = 0;
+    
   }
 
   //Return the `collision` value

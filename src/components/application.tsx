@@ -27,24 +27,16 @@ export const appContainer = {
 } as Container
 
 
-// const gameContainer = document.getElementById('game')
-// console.log(gameContainer)
-// if (gameContainer){
-//     gameContainer.appendChild(app.view)
-// }   
-
-
 export const Application = (props: any) => {
 
     const gameContainer = useCallback(node => {
         if (node !== null ){
             node.appendChild(app.view)
-            console.log('node ready')
         }
     }, []);
 
     useEffect(() => {
-        console.log('using effect')
+
     }, [gameContainer])
 
     console.log(gameContainer);

@@ -3,24 +3,12 @@
 
 import React, { useState, useEffect, useRef} from 'react';
 import * as PIXI from 'pixi.js';
-import { Player, Container } from '../types/game_types';
+import { Player, Container, Tile, Enemy } from '../types/game_types';
 import { keyboard, hitWall, collided, contain } from '../helpers/game_helpers';
+
 import { appContainer, app } from './application';
 import * as stages from '../helpers/stages';
-
-export class Tile {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-
-    constructor(x: number, y: number, width: number, height: number){
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
-    }
-}
+import { GRAVITY, MAX_GRAVITY } from '../helpers/contants';
 
 var graphics = new PIXI.Graphics();
 
@@ -37,21 +25,12 @@ graphics.lineStyle(5, 0xFF0000);
 
 const gameWidth = Math.floor(window.screen.width * .58)
 const gameHeight = Math.floor(window.screen.height * .78)
-const size = 5;
+const size = 10;
 const tiles = [] as any;
 const tileWidth = gameWidth / size;
 const tileHeight = gameHeight / size;
+const currentStage = stages.test_level;
 
-// for (let i = 0; i < size; ++i){
-//     const x = i * tileWidth;
-//     for (let k = 0; k < size; ++k){
-//         const y = k * tileHeight;
-//         tiles.push(new Tile(x, y, tileWidth, tileHeight));
-//         // graphics.drawRect(x, y, tileWidth, tileHeight);
-//     }
-// }
-// console.log(stages.level_1)
-const currentStage = stages.level_1;
 const stageRows = currentStage.split('\n');
 for (let i = 0; i < stageRows.length; ++i){
     const y = i * tileHeight;
@@ -77,8 +56,27 @@ export const Game = (props: any) => {
             sprite: {} as PIXI.Sprite,
             xVelocity: 0,
             yVelocity: 0,
+            attributes: {
+                jump: -12,
+                moveSpeed: 1.5
+            }
         } as Player
-    )
+    );
+    
+    const [enemies, setEnemies] = useState(
+        [
+            {
+                sprite: {} as PIXI.Sprite,
+                xVelocity: 0,
+                yVelocity: 0,
+                attributes: {
+                    jump: -15,
+                    moveSpeed: 0.5
+                }
+            } as Enemy
+        ]
+    );
+    
     const [isReady, setIsReady] = useState(false);
     const [keys, setKeys] = useState(
         {
@@ -97,13 +95,14 @@ export const Game = (props: any) => {
         else{
             app.loader
                 .add("./knight.png")
+                .add("./kobold_king.png")
                 .load(init);
         }
     }, [player, isReady])
 
     const handleKeyEvents = () => {
         keys.up.press = () => {
-            player.yVelocity = -1;
+            player.yVelocity = -player.attributes.moveSpeed;
         };
         keys.up.release = () => {
             if (player.yVelocity < 0)
@@ -111,7 +110,7 @@ export const Game = (props: any) => {
         };
 
         keys.down.press = () => {
-            player.yVelocity = 1;
+            player.yVelocity = player.attributes.moveSpeed;
         };
         keys.down.release = () => {
             if (player.yVelocity > 0)
@@ -119,7 +118,7 @@ export const Game = (props: any) => {
         };
 
         keys.left.press = () => {
-            player.xVelocity = -1;
+            player.xVelocity = -player.attributes.moveSpeed;
         };
         keys.left.release = () => {
             if (player.xVelocity < 0)
@@ -127,7 +126,9 @@ export const Game = (props: any) => {
         };
 
         keys.right.press = () => {
-            player.xVelocity = 1;
+            player.xVelocity = player.attributes.moveSpeed;
+            console.log(enemies[0].xVelocity)
+
         };
         keys.right.release = () => {
             if (player.xVelocity > 0)
@@ -135,10 +136,10 @@ export const Game = (props: any) => {
         };
 
         keys.jump.press = () => {
-            // if (!player.isFlying){
-                player.yVelocity -= 10;
+            if (player.yVelocity >= 0){
+                player.yVelocity = player.attributes.jump;
                 player.isFlying = true;
-            // }
+            }
         }
         
     }
@@ -146,26 +147,64 @@ export const Game = (props: any) => {
     const updatePlayer = () => {
         player.sprite.y += player.yVelocity;
         player.sprite.x += player.xVelocity;
-        contain(player.sprite, appContainer);
+        contain(player, appContainer);
         tiles.forEach((tile: Tile) => {
             collided(player, tile)
         });
-        // Apply gravity, max gravity is 3 px/tick
-        if (player.yVelocity < 3){
-            player.yVelocity += 1;        
-        }
+        // Apply gravity
+        // Gravity applies in GRAVITY px/tick
+        // if (player.yVelocity < MAX_GRAVITY){
+            player.yVelocity += GRAVITY;        
+        // }
+    }
+
+    const updateEnemies = () => {
+        enemies.forEach((enemy) => {
+            // Enemy is to the right of the player
+            if (enemy.sprite.x > player.sprite.x){
+                // move to the left
+                enemy.xVelocity = -enemy.attributes.moveSpeed
+            }
+            // Enemy is to the left of the plyer
+            else if (enemy.sprite.x < player.sprite.x){
+                enemy.xVelocity = enemy.attributes.moveSpeed;
+            }
+            // Enemy is on top of
+            else{
+                enemy.xVelocity = 0;
+            }
+            enemy.sprite.y += enemy.yVelocity;
+            enemy.sprite.x += enemy.xVelocity;
+            contain(enemy, appContainer);
+            tiles.forEach((tile: Tile) => {
+                collided(enemy, tile)
+            });
+            // Apply gravity
+            // Gravity applies in GRAVITY px/tick
+            // if (enemy.yVelocity < MAX_GRAVITY){
+                enemy.yVelocity += GRAVITY;        
+            // }
+        })
+  
+
     }
 
     const gameLoop = (delta: any) => {
         updatePlayer();
+        updateEnemies();
     }
 
     const init = () => {
         player.sprite = new PIXI.Sprite(app.loader.resources["./knight.png"].texture)
+        enemies[0].sprite = new PIXI.Sprite(app.loader.resources["./kobold_king.png"].texture)
+        enemies[0].sprite.x = 500;
+        enemies[0].sprite.y = 0;
         setIsReady(true);
         setPlayer(player);
+        setEnemies(enemies);
         handleKeyEvents();
         app.stage.addChild(player.sprite);
+        app.stage.addChild(enemies[0].sprite);
         app.stage.addChild(graphics);
         app.ticker.add(delta => gameLoop(delta))
 
