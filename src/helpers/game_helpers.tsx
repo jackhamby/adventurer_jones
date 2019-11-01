@@ -89,39 +89,32 @@ export const hitWall = (player: Player, container: Container) => {
 }
 
 export const collided = (player: Player | Enemy, object: Container | PIXI.Sprite) => {
-
+  // Check if player collided with given object
   if (player.sprite.y< (object.y + object.height) &&
       (player.sprite.y + player.sprite.height) > object.y &&
       player.sprite.x < (object.x + object.width) &&
       (player.sprite.x + player.sprite.width) > object.x){  
 
+        // Player is on top of given object, allow movement in x
         if ((player.sprite.y + player.sprite.height - margin) >= object.y){
           player.sprite.x -= player.xVelocity;
         }        
-        // if (player.sprite.){
-        if (player.sprite.x >= (object.x + object.width)){
+
+        // Player is against side
+        if (player.sprite.x >= (object.x + object.width) ||
+        (player.sprite.x + player.sprite.width) <= object.x){
           player.sprite.y += player.yVelocity;
           console.log('do somthing here')
         }
-        if ((player.sprite.x + player.sprite.width) <= object.x){
-          player.sprite.y += player.yVelocity;
-        }
+        // if ((player.sprite.x + player.sprite.width) <= object.x){
+        //   player.sprite.y += player.yVelocity;
+        // }
         player.sprite.y -= player.yVelocity;
         player.yVelocity = 0;
         console.log('not moving y')
-
-        // }
         return true;
       }
     return false;
-  // check if PLAYER BOTTOM hit OBJECT top
-  // if (player.sprite.y + player.sprite.width > object.y){
-  //   // console.log('collided top')
-  // }
-  // // check if PLAYER TOP hit OBJECT bottom
-  // if (player.sprite.y < object.y + object.height){
-  //   console.log('collided bottom')
-  // }
 }
 
 

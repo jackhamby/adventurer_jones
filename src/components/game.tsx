@@ -179,11 +179,8 @@ export const Game = (props: any) => {
             tiles.forEach((tile: Tile) => {
                 collided(enemy, tile)
             });
-            // Apply gravity
-            // Gravity applies in GRAVITY px/tick
-            // if (enemy.yVelocity < MAX_GRAVITY){
+       
                 enemy.yVelocity += GRAVITY;        
-            // }
         })
   
 
@@ -198,7 +195,6 @@ export const Game = (props: any) => {
         player.sprite = new PIXI.Sprite(app.loader.resources["./knight.png"].texture)
         enemies[0].sprite = new PIXI.Sprite(app.loader.resources["./kobold_king.png"].texture)
         enemies[0].sprite.x = 500;
-        enemies[0].sprite.y = 0;
         setIsReady(true);
         setPlayer(player);
         setEnemies(enemies);
