@@ -5,27 +5,17 @@ import './application.css';
 import { Game } from './game';
 import {Container} from '../types/game_types';
 import * as PIXI from 'pixi.js';
+import {GAME_WIDTH, GAME_HEIGHT } from '../helpers/contants';
 
-
-export const gameWidth = Math.floor(window.screen.width * .58)
-export const gameHeight = Math.floor(window.screen.height * .78)
 
 export const app = new PIXI.Application({ 
-    width: gameWidth, 
-    height: gameHeight,                       
+    width: GAME_WIDTH, 
+    height: GAME_HEIGHT,                       
     antialias: true, 
     transparent: false, 
     resolution: 1
   }
 );
-
-export const appContainer = {
-    width: gameWidth, 
-    height: gameHeight,  
-    x: 0,
-    y: 0
-} as Container
-
 
 export const Application = (props: any) => {
 
@@ -39,7 +29,6 @@ export const Application = (props: any) => {
 
     }, [gameContainer])
 
-    console.log(gameContainer);
     return (
         <div className="container-fluid container"> 
             <div className="row top wrapper">

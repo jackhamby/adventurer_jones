@@ -1,5 +1,8 @@
 import * as PIXI from 'pixi.js'
-import { Container, Player, Enemy } from '../types/game_types'
+import { Container, Player, Enemy, Tile } from '../types/game_types'
+import { Creature } from '../units/creature';
+import { GAME_HEIGHT, GAME_WIDTH } from '../helpers/contants';
+
 
 export const margin = 5;
 
@@ -14,103 +17,72 @@ export interface Key {
     unsubscribe: Function;
 }
 
-export const keyboard = (value: string): Key => {
-    let key = {
-        value: value,
-        isDown: false,
-        isUp: false,
-        press: () => {},
-        release: () => {},
-        upHandler: (event: any) => {},
-        downHandler: (event: any) => {},
-        unsubscribe: () => {},
-    } as Key;
-    //The `downHandler`
-    key.downHandler = (event: any) => {
-      if (event.key === key.value) {
-        if (key.isUp && key.press) key.press();
-        key.isDown = true;
-        key.isUp = false;
-        event.preventDefault();
+export const generateTiles = (stage: string): Tile[] => {
+  const tiles = [];
+  const stageRows = stage.split('\n');
+  const tileWidth = GAME_WIDTH / stageRows.length;
+  const tileHeight = GAME_HEIGHT / stageRows.length;
+  for (let i = 0; i < stageRows.length; ++i){
+      const y = i * tileHeight;
+      const stageRow = stageRows[i];
+      for (let k = 0; k < stageRow.length; ++k){
+          const x = k * tileWidth;
+          const tile = stageRow.charAt(k);
+          if (tile === '1'){
+              tiles.push(new Tile(x, y, tileWidth, tileHeight))
+          }
+
       }
-    };
-  
-    //The `upHandler`
-    key.upHandler = (event: any) => {
-      if (event.key === key.value) {
-        if (key.isDown && key.release) key.release();
-        key.isDown = false;
-        key.isUp = true;
-        event.preventDefault();
-      }
-    };
-  
-    //Attach event listeners
-    const downListener = key.downHandler.bind(key);
-    const upListener = key.upHandler.bind(key);
-    
-    window.addEventListener(
-      "keydown", downListener, false
-    );
-    window.addEventListener(
-      "keyup", upListener, false
-    );
-    
-    // Detach event listeners
-    key.unsubscribe = () => {
-      window.removeEventListener("keydown", downListener);
-      window.removeEventListener("keyup", upListener);
-    };
-    
-    return key;
   }
+  return tiles;
+}
 
 
-export const hitWall = (player: Player, container: Container) => {
-    const sprite = player.sprite;
+export const hitWall = (creature: Creature, container: Container) => {
+    const sprite = creature.sprite;
     const walls = [];
     // left collision
-    if (sprite.x + player.xVelocity < container.x){
+    if (sprite.x + creature.xVelocity < container.x){
         walls.push("left");
     }
     // right collision
-    if ((sprite.x + sprite.width) + player.xVelocity > (container.x + container.width)){
+    if ((sprite.x + sprite.width) + creature.xVelocity > (container.x + container.width)){
         walls.push("right");
     }
     // top collision
-    if (sprite.y + player.yVelocity < container.y){
+    if (sprite.y + creature.yVelocity < container.y){
       walls.push("top");
     }
     // bootm collision
-    if ((sprite.y + sprite.height) + player.yVelocity > (container.y + container.height)){
+    if ((sprite.y + sprite.height) + creature.yVelocity > (container.y + container.height)){
       walls.push("bottom");
     }
     return walls;
 }
 
-export const collided = (player: Player | Enemy, object: Container | PIXI.Sprite) => {
+export const collided = (creature: Creature, object: Container | PIXI.Sprite) => {
   // Check if player collided with given object
-  if (player.sprite.y< (object.y + object.height) &&
-      (player.sprite.y + player.sprite.height) > object.y &&
-      player.sprite.x < (object.x + object.width) &&
-      (player.sprite.x + player.sprite.width) > object.x){  
+  if (creature.sprite.y< (object.y + object.height) &&
+      (creature.sprite.y + creature.sprite.height) > object.y &&
+      creature.sprite.x < (object.x + object.width) &&
+      (creature.sprite.x + creature.sprite.width) > object.x){  
 
         // Player is on top of given object, allow movement in x
-        if ((player.sprite.y + player.sprite.height - margin) >= object.y){
-          player.sprite.x -= player.xVelocity;
+        if ((creature.sprite.y + creature.sprite.height - margin) >= object.y){
+          creature.sprite.x -= creature.xVelocity;
         }        
 
         // Player is against side
-        if (player.sprite.x >= (object.x + object.width) ||
-        (player.sprite.x + player.sprite.width) <= object.x){
-          player.sprite.y += player.yVelocity;
+        if (creature.sprite.x >= (object.x + object.width) ||
+        (creature.sprite.x + creature.sprite.width) <= object.x){
+          creature.sprite.y += creature.yVelocity;
           console.log('do somthing here')
         }
         // if ((player.sprite.x + player.sprite.width) <= object.x){
         //   player.sprite.y += player.yVelocity;
         // }
-        player.sprite.y -= player.yVelocity;
-        player.yVelocity = 0;
+        creature.sprite.y -= creature.yVelocity;
+        creature.yVelocity = 0;
         console.log('not moving y')
         return true;
       }
@@ -118,10 +90,10 @@ export const collided = (player: Player | Enemy, object: Container | PIXI.Sprite
 }
 
 
-export const contain = (player: Player | Enemy, container: Container) => {
+export const contain = (creature: Creature, container: Container) => {
 
   let collision = undefined;
-  const sprite = player.sprite;
+  const sprite = creature.sprite;
   //Left
   if (sprite.x < container.x) {
     sprite.x = container.x;
@@ -144,10 +116,64 @@ export const contain = (player: Player | Enemy, container: Container) => {
   if (sprite.y + sprite.height > container.height) {
     sprite.y = container.height - sprite.height;
     collision = "bottom";
-    player.yVelocity = 0;
+    creature.yVelocity = 0;
     
   }
 
   //Return the `collision` value
   return collision;
+}
+
+
+
+
+export const keyboard = (value: string): Key => {
+  let key = {
+      value: value,
+      isDown: false,
+      isUp: false,
+      press: () => {},
+      release: () => {},
+      upHandler: (event: any) => {},
+      downHandler: (event: any) => {},
+      unsubscribe: () => {},
+  } as Key;
+  //The `downHandler`
+  key.downHandler = (event: any) => {
+    if (event.key === key.value) {
+      if (key.isUp && key.press) key.press();
+      key.isDown = true;
+      key.isUp = false;
+      event.preventDefault();
+    }
+  };
+
+  //The `upHandler`
+  key.upHandler = (event: any) => {
+    if (event.key === key.value) {
+      if (key.isDown && key.release) key.release();
+      key.isDown = false;
+      key.isUp = true;
+      event.preventDefault();
+    }
+  };
+
+  //Attach event listeners
+  const downListener = key.downHandler.bind(key);
+  const upListener = key.upHandler.bind(key);
+  
+  window.addEventListener(
+    "keydown", downListener, false
+  );
+  window.addEventListener(
+    "keyup", upListener, false
+  );
+  
+  // Detach event listeners
+  key.unsubscribe = () => {
+    window.removeEventListener("keydown", downListener);
+    window.removeEventListener("keyup", upListener);
+  };
+  
+  return key;
 }
