@@ -10,6 +10,7 @@ export class Creature {
     attributes:Attributes;
     appState: AppState;
     healthBar: PIXI.Graphics;
+    isFlying: boolean
 
     constructor(appState: AppState){
         this.xVelocity = 0;
@@ -21,32 +22,46 @@ export class Creature {
             health: 100
         } as Attributes;
         this.appState = appState;
-        this.healthBar = new PIXI.Graphics()
-        this.healthBar.beginFill(0xFFFF00);
-
-        // set the line style to have a width of 5 and set the color to red
-        this.healthBar.lineStyle(5, 0xFF0000);
-        this.healthBar.drawRect(this.sprite.x, this.sprite.y, 100, 100);
-
+        this.healthBar = new PIXI.Graphics();
+        this.isFlying = true;
     }
 
+ 
     update(){
-        // this.healthBar.clear();
-        this.healthBar.drawRect(this.sprite.x, this.sprite.y, 100, 100);
-        this.sprite.y += this.yVelocity;
-        this.sprite.x += this.xVelocity;
+        this.renderHealthBar()
 
+        this.sprite.x += this.xVelocity;
         contain(this, APPCONTAINER);
         this.appState.tiles.forEach((tile: Tile) => {
-            collided(this, tile)
+            
+            collided(this, tile, this.xVelocity, 0);
         });
+
+        this.sprite.y += this.yVelocity;
+        this.appState.tiles.forEach((tile: Tile) => {
+            collided(this, tile, 0, this.yVelocity);
+        });
+
         // Apply gravity
-        // Gravity applies in GRAVITY px/tick
-        // if (player.yVelocity < MAX_GRAVITY){
-        this.yVelocity += GRAVITY;        
-        app.stage.addChild(this.healthBar)
-        // }
+        this.applyGravity();
+
     }
+    
+
+    applyGravity(){
+        if (this.yVelocity < 0 || this.isFlying){
+            this.yVelocity += GRAVITY;        
+        }
+    }
+
+    renderHealthBar(){
+        this.healthBar.clear();
+        this.healthBar.beginFill(0xFFFF00);
+        this.healthBar.lineStyle(1, 0xFFFFFF);
+        this.healthBar.drawRect(this.sprite.x, this.sprite.y - (this.sprite.height / 4), this.sprite.width, 1);
+        app.stage.addChild(this.healthBar)
+    }
+
 
 
 

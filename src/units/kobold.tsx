@@ -15,10 +15,10 @@ export class Kobold extends Creature {
             health: 25
         } as Attributes;
         this.sprite = new PIXI.Sprite(app.loader.resources["./kobold_king.png"].texture)
-
     }
 
     update(){
+        this.renderHealthBar()
         const player = this.appState.player.creature;
         if (this.sprite.x > player.sprite.x){
             // move to the left
@@ -32,17 +32,17 @@ export class Kobold extends Creature {
         else{
             this.xVelocity = 0;
         }
-        this.sprite.y += this.yVelocity;
-        this.sprite.x += this.xVelocity;
 
+        this.sprite.x += (this.xVelocity * this.attributes.moveSpeed);
         contain(this, APPCONTAINER);
         this.appState.tiles.forEach((tile: Tile) => {
-            collided(this, tile)
+            collided(this, tile, this.xVelocity, 0);
         });
-        // Apply gravity
-        // Gravity applies in GRAVITY px/tick
-        // if (player.yVelocity < MAX_GRAVITY){
-        this.yVelocity += GRAVITY;        
-        // }
+
+        this.sprite.y += (this.yVelocity * this.attributes.moveSpeed);
+        this.appState.tiles.forEach((tile: Tile) => {
+            collided(this, tile, 0, this.yVelocity);
+        });
+        this.applyGravity()
     }
 }

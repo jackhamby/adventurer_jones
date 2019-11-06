@@ -2,6 +2,8 @@ import * as PIXI from 'pixi.js'
 import { Container, Player, Enemy, Tile } from '../types/game_types'
 import { Creature } from '../units/creature';
 import { GAME_HEIGHT, GAME_WIDTH } from '../helpers/contants';
+import { Projectile } from '../projectiles/projectile';
+import { create } from 'domain';
 
 
 export const margin = 5;
@@ -37,60 +39,40 @@ export const generateTiles = (stage: string): Tile[] => {
   return tiles;
 }
 
-
-export const hitWall = (creature: Creature, container: Container) => {
-    const sprite = creature.sprite;
-    const walls = [];
-    // left collision
-    if (sprite.x + creature.xVelocity < container.x){
-        walls.push("left");
-    }
-    // right collision
-    if ((sprite.x + sprite.width) + creature.xVelocity > (container.x + container.width)){
-        walls.push("right");
-    }
-    // top collision
-    if (sprite.y + creature.yVelocity < container.y){
-      walls.push("top");
-    }
-    // bootm collision
-    if ((sprite.y + sprite.height) + creature.yVelocity > (container.y + container.height)){
-      walls.push("bottom");
-    }
-    return walls;
-}
-
-export const collided = (creature: Creature, object: Container | PIXI.Sprite) => {
-  // Check if player collided with given object
-  if (creature.sprite.y< (object.y + object.height) &&
+export const collided = (creature: Creature | Projectile, object: Container | PIXI.Sprite, xVelocity: number, yVelocity: number) => {
+  const ss = {} as Projectile;
+  if (creature.sprite.y < (object.y + object.height) &&
       (creature.sprite.y + creature.sprite.height) > object.y &&
       creature.sprite.x < (object.x + object.width) &&
       (creature.sprite.x + creature.sprite.width) > object.x){  
-
-        // Player is on top of given object, allow movement in x
-        if ((creature.sprite.y + creature.sprite.height - margin) >= object.y){
-          creature.sprite.x -= creature.xVelocity;
-        }        
-
-        // Player is against side
-        if (creature.sprite.x >= (object.x + object.width) ||
-        (creature.sprite.x + creature.sprite.width) <= object.x){
-          creature.sprite.y += creature.yVelocity;
-          console.log('do somthing here')
+        if (creature.attributes.moveSpeed == 20){
+          if (object.width < 50){
+            console.log('arrow collide')
+          }
         }
-        // if ((player.sprite.x + player.sprite.width) <= object.x){
-        //   player.sprite.y += player.yVelocity;
-        // }
-        creature.sprite.y -= creature.yVelocity;
-        creature.yVelocity = 0;
-        console.log('not moving y')
-        return true;
+        if (xVelocity > 0){
+          // console.log('hit right')
+          creature.sprite.x = object.x - creature.sprite.width;
+        }
+        if (xVelocity < 0){
+          // console.log('hit left')
+          creature.sprite.x = object.x + object.width;
+
+        }
+        if (yVelocity > 0){
+          // console.log('hit top')
+          creature.sprite.y = object.y - creature.sprite.height;
+          creature.yVelocity = 0;
+
+        }
+        if (yVelocity < 0){
+          creature.sprite.y = object.y + object.height;
+          // console.log('hit bottom')
+        }
       }
-    return false;
 }
 
-
-export const contain = (creature: Creature, container: Container) => {
+export const contain = (creature: Creature | Projectile, container: Container | PIXI.Sprite) => {
 
   let collision = undefined;
   const sprite = creature.sprite;
@@ -109,7 +91,6 @@ export const contain = (creature: Creature, container: Container) => {
   //Right
   if (sprite.x + sprite.width > container.width) {
     sprite.x = container.width - sprite.width;
-    collision = "right";
   }
 
   //Bottom
@@ -119,7 +100,6 @@ export const contain = (creature: Creature, container: Container) => {
     creature.yVelocity = 0;
     
   }
-
   //Return the `collision` value
   return collision;
 }

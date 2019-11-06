@@ -4,10 +4,13 @@
 import React, { useState, useEffect, useRef} from 'react';
 import * as PIXI from 'pixi.js';
 import { Player, Container, Tile, Enemy, AppState } from '../types/game_types';
-import { keyboard, hitWall, collided, contain, generateTiles } from '../helpers/game_helpers';
+import { keyboard, generateTiles } from '../helpers/game_helpers';
 import { Creature } from '../units/creature';
 import { Kobold } from '../units/kobold';
 import { Knight } from '../units/knight';
+import { Arrow } from '../projectiles/arrow';
+import { Projectile } from '../projectiles/projectile';
+
 import { app } from './application';
 import * as stages from '../helpers/stages';
 import { GRAVITY, MAX_GRAVITY, GAME_HEIGHT, GAME_WIDTH } from '../helpers/contants';
@@ -38,6 +41,8 @@ export const Game = (props: any) => {
         // []
     );
 
+    const [projectiles, setProjectiles] = useState([] as Projectile[]);
+
     const [tiles, setTiles] = useState(generateTiles(stages.test_level))
 
     const [isReady, setIsReady] = useState(false);
@@ -47,7 +52,8 @@ export const Game = (props: any) => {
             player,
             enemies,
             tiles,
-            isReady
+            isReady, 
+            projectiles
         } as AppState
     )
     const [keys, setKeys] = useState(
@@ -57,6 +63,10 @@ export const Game = (props: any) => {
             "left" : keyboard('a'),
             "right" : keyboard('d'),
             "jump" : keyboard(' '),
+            "arrow_left" : keyboard('ArrowLeft'),
+            "arrow_right" : keyboard('ArrowRight'),
+            "arrow_up" : keyboard('ArrowUp'),
+            "arrow_down" : keyboard('ArrowDown')
         }
     )
     
@@ -68,12 +78,38 @@ export const Game = (props: any) => {
             app.loader
                 .add("./knight.png")
                 .add("./kobold_king.png")
+                .add("./arrow.png")
                 .load(init);
         }
     }, [player, isReady])
 
     const handleKeyEvents = () => {
         const creature = player.creature;
+        keys.arrow_left.press = () => {
+            // console.log('fire left');
+            const proj = new Arrow(appState, creature.sprite.x, creature.sprite.y, -1, 0);
+            projectiles.push(proj);
+            app.stage.addChild(proj.sprite);
+        }
+        keys.arrow_right.press = () => {
+            // console.log('fire right')
+            const proj = new Arrow(appState, creature.sprite.x, creature.sprite.y, 1, 0);
+            projectiles.push(proj);
+            app.stage.addChild(proj.sprite);
+        }     
+        keys.arrow_up.press = () => {
+            // console.log('fire up')
+            const proj = new Arrow(appState, creature.sprite.x, creature.sprite.y, 0, -1);
+            projectiles.push(proj);
+            app.stage.addChild(proj.sprite);
+        }     
+        keys.arrow_down.press = () => {
+            // console.log('fire down')
+            const proj = new Arrow(appState, creature.sprite.x, creature.sprite.y, 0, 1);
+            projectiles.push(proj);
+            app.stage.addChild(proj.sprite);
+        }
+
         keys.up.press = () => {
             creature.yVelocity = -creature.attributes.moveSpeed;
         };
@@ -109,8 +145,8 @@ export const Game = (props: any) => {
 
         keys.jump.press = () => {
             if (creature.yVelocity >= 0){
+                creature.isFlying = true;
                 creature.yVelocity = creature.attributes.jump;
-                // creature.isFlying = true;
             }
         }
         
@@ -118,21 +154,20 @@ export const Game = (props: any) => {
 
 
     const gameLoop = (delta: any) => {
-        // updatePlayer();
         player.creature.update()
-        // updateEnemies();
         enemies.forEach((enemy) => {
             enemy.creature.update()
         });
+        projectiles.forEach((projectile) => {
+            projectile.update();
+        })
     }
 
     const init = () => {
         player.creature = new Knight(appState);
+        // Temporary testing enemy, logic
+        // to randomly generate to come
         enemies[0].creature = new Kobold(appState);
-        console.log(player.creature.sprite)
-        // player.creature.sprite = new PIXI.Sprite(app.loader.resources["./knight.png"].texture)
-        // enemies[0].creature.sprite = new PIXI.Sprite(app.loader.resources["./knight.png"].texture)
-
         enemies[0].creature.sprite.x = 500;
         tiles.forEach((tile: Tile) => {
             graphics.drawRect(tile.x, tile.y, tile.width, tile.height);

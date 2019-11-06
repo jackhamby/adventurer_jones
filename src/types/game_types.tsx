@@ -1,12 +1,13 @@
 import * as PIXI from 'pixi.js';
 import { Creature } from '../units/creature';
-
+import { Projectile } from '../projectiles/projectile';
 
 export interface AppState {
     enemies: Enemy[];
     player: Player;
     tiles: Tile[];
     isReady: boolean;
+    projectiles: Projectile[];
 }
 
 export interface Enemy {
