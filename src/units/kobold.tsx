@@ -1,5 +1,5 @@
 import { Creature } from './creature';
-import { contain, collided } from '../helpers/game_helpers';
+import { contain, collideTiles } from '../helpers/game_helpers';
 import { APPCONTAINER, GRAVITY } from '../helpers/contants';
 import { AppState, Tile, Attributes } from '../types/game_types';
 import { app } from '../components/application';
@@ -10,6 +10,11 @@ export class Kobold extends Creature {
     constructor(appState: AppState){
         super(appState);
         this.attributes = {
+            jump: -10,
+            moveSpeed: 1,
+            health: 25
+        } as Attributes;
+        this.currentAttributes = {
             jump: -10,
             moveSpeed: 1,
             health: 25
@@ -36,12 +41,12 @@ export class Kobold extends Creature {
         this.sprite.x += (this.xVelocity * this.attributes.moveSpeed);
         contain(this, APPCONTAINER);
         this.appState.tiles.forEach((tile: Tile) => {
-            collided(this, tile, this.xVelocity, 0);
+            collideTiles(this, tile, this.xVelocity, 0);
         });
 
         this.sprite.y += (this.yVelocity * this.attributes.moveSpeed);
         this.appState.tiles.forEach((tile: Tile) => {
-            collided(this, tile, 0, this.yVelocity);
+            collideTiles(this, tile, 0, this.yVelocity);
         });
         this.applyGravity()
     }

@@ -3,15 +3,11 @@ import { Creature } from '../units/creature';
 import { Projectile } from '../projectiles/projectile';
 
 export interface AppState {
-    enemies: Enemy[];
+    enemies: Creature[];
     player: Player;
     tiles: Tile[];
     isReady: boolean;
     projectiles: Projectile[];
-}
-
-export interface Enemy {
-    creature: Creature;
 }
 
 export interface Player {
@@ -29,6 +25,7 @@ export interface Attributes {
     jump: number;
     moveSpeed: number;
     health: number;
+    damage: number;
 }
 
 export class Tile {

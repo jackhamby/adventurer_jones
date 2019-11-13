@@ -1,6 +1,7 @@
 import * as PIXI from 'pixi.js'
-import { Container, Player, Enemy, Tile } from '../types/game_types'
+import { Container, Player, Tile, AppState } from '../types/game_types'
 import { Creature } from '../units/creature';
+import { Kobold } from '../units/kobold';
 import { GAME_HEIGHT, GAME_WIDTH } from '../helpers/contants';
 import { Projectile } from '../projectiles/projectile';
 import { create } from 'domain';
@@ -18,6 +19,14 @@ export interface Key {
     upHandler: Function;
     unsubscribe: Function;
 }
+
+
+export const createEnemy = (appState: AppState) => {
+  const enemy = new Kobold(appState);
+  enemy.sprite.x = 500;
+  return enemy
+}
+
 
 export const generateTiles = (stage: string): Tile[] => {
   const tiles = [];
@@ -39,38 +48,89 @@ export const generateTiles = (stage: string): Tile[] => {
   return tiles;
 }
 
-export const collided = (creature: Creature | Projectile, object: Container | PIXI.Sprite, xVelocity: number, yVelocity: number) => {
-  const ss = {} as Projectile;
+
+export const collideTiles = (creature: Creature, object: Container, xVelocity: number, yVelocity: number) => {
   if (creature.sprite.y < (object.y + object.height) &&
       (creature.sprite.y + creature.sprite.height) > object.y &&
       creature.sprite.x < (object.x + object.width) &&
       (creature.sprite.x + creature.sprite.width) > object.x){  
-        if (creature.attributes.moveSpeed == 20){
-          if (object.width < 50){
-            console.log('arrow collide')
-          }
-        }
         if (xVelocity > 0){
-          // console.log('hit right')
           creature.sprite.x = object.x - creature.sprite.width;
         }
         if (xVelocity < 0){
-          // console.log('hit left')
           creature.sprite.x = object.x + object.width;
-
         }
         if (yVelocity > 0){
-          // console.log('hit top')
-          creature.sprite.y = object.y - creature.sprite.height;
-          creature.yVelocity = 0;
-
+            creature.sprite.y = object.y - creature.sprite.height;
+            creature.yVelocity = 0;   
         }
         if (yVelocity < 0){
           creature.sprite.y = object.y + object.height;
-          // console.log('hit bottom')
         }
+        return true;
       }
+      return false;
 }
+
+
+export const pCollidedTiles = (projectile: Projectile, object: Tile, xVelocity: number, yVelocity: number) => {
+  if (projectile.sprite.y < (object.y + object.height) &&
+    (projectile.sprite.y + projectile.sprite.height) > object.y &&
+    projectile.sprite.x < (object.x + object.width) &&
+    (projectile.sprite.x + projectile.sprite.width) > object.x) {
+    if (xVelocity > 0) {
+      projectile.sprite.x = object.x - projectile.sprite.width;
+      projectile.xVelocity = 0;
+    }
+    if (xVelocity < 0) {
+      projectile.sprite.x = object.x + object.width;
+      projectile.xVelocity = 0;
+    }
+    if (yVelocity > 0) {
+      projectile.sprite.y = object.y - projectile.sprite.height;
+      projectile.yVelocity = 0;
+    }
+    if (yVelocity < 0) {
+      projectile.sprite.y = object.y + object.height;
+    }
+    return true;
+  }
+  return false;
+}
+
+
+export const pCollided = (projectile: Projectile, creature: Creature, xVelocity: number, yVelocity: number) => {
+  const ss = {} as Projectile;
+  const object = creature.sprite;
+  if (projectile.sprite.y < (object.y + object.height) &&
+    (projectile.sprite.y + projectile.sprite.height) > object.y &&
+    projectile.sprite.x < (object.x + object.width) &&
+    (projectile.sprite.x + projectile.sprite.width) > object.x) {
+    if (xVelocity > 0) {
+      projectile.sprite.x = object.x - projectile.sprite.width;
+        creature.takeDamage(projectile.attributes.damage)
+        projectile.destroy()
+    }
+    if (xVelocity < 0) {
+      projectile.sprite.x = object.x + object.width;
+      creature.takeDamage(projectile.attributes.damage)
+      projectile.destroy()
+    }
+    if (yVelocity > 0) {
+      projectile.sprite.y = object.y - projectile.sprite.height;
+      creature.takeDamage(projectile.attributes.damage)
+      projectile.destroy()
+    }
+    if (yVelocity < 0) {
+      projectile.sprite.y = object.y + object.height;
+      creature.takeDamage(projectile.attributes.damage)
+      projectile.destroy()
+    }
+    return true;
+  }
+  return false;
+}
+
 
 export const contain = (creature: Creature | Projectile, container: Container | PIXI.Sprite) => {
 

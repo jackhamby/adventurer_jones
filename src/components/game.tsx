@@ -3,8 +3,8 @@
 
 import React, { useState, useEffect, useRef} from 'react';
 import * as PIXI from 'pixi.js';
-import { Player, Container, Tile, Enemy, AppState } from '../types/game_types';
-import { keyboard, generateTiles } from '../helpers/game_helpers';
+import { Player, Container, Tile, AppState } from '../types/game_types';
+import { keyboard, generateTiles, createEnemy } from '../helpers/game_helpers';
 import { Creature } from '../units/creature';
 import { Kobold } from '../units/kobold';
 import { Knight } from '../units/knight';
@@ -36,7 +36,7 @@ export const Game = (props: any) => {
         [
             {
                 // creature: new Creature(),
-            } as Enemy
+            } as Creature
         ]
         // []
     );
@@ -156,7 +156,7 @@ export const Game = (props: any) => {
     const gameLoop = (delta: any) => {
         player.creature.update()
         enemies.forEach((enemy) => {
-            enemy.creature.update()
+            enemy.update()
         });
         projectiles.forEach((projectile) => {
             projectile.update();
@@ -167,8 +167,9 @@ export const Game = (props: any) => {
         player.creature = new Knight(appState);
         // Temporary testing enemy, logic
         // to randomly generate to come
-        enemies[0].creature = new Kobold(appState);
-        enemies[0].creature.sprite.x = 500;
+        enemies[0] = new Kobold(appState);
+        enemies[0].sprite.x = 500;
+        // enemies.push(createEnemy(appState));
         tiles.forEach((tile: Tile) => {
             graphics.drawRect(tile.x, tile.y, tile.width, tile.height);
         })
@@ -177,7 +178,7 @@ export const Game = (props: any) => {
         setEnemies(enemies);
         handleKeyEvents();
         app.stage.addChild(player.creature.sprite);
-        app.stage.addChild(enemies[0].creature.sprite);
+        app.stage.addChild(enemies[0].sprite);
         app.stage.addChild(graphics);
         app.ticker.add(delta => gameLoop(delta))
 

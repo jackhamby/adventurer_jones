@@ -1,5 +1,5 @@
 import { Creature } from './creature';
-import { contain, collided } from '../helpers/game_helpers';
+import { contain } from '../helpers/game_helpers';
 import { APPCONTAINER, GRAVITY } from '../helpers/contants';
 import { AppState, Tile } from '../types/game_types';
 import { app } from '../components/application';
